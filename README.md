@@ -2,10 +2,16 @@
 
 An independent cast-as-intended verification tool for IVXV.
 
-The official application can be found at:
+The source code for the official Android & iOS verification applications can be found at:
 
 - [valimised/ivotingverification](https://github.com/valimised/ivotingverification) — Android
 - [valimised/ios-ivotingverification](https://github.com/valimised/ios-ivotingverification) — iOS
+
+Links to the applications and verification instructions can be found on the official [website](https://www.valimised.ee/en/internet-voting/guidelines/checking-i-vote).
+
+Another independent vote verification tool is [infoaed/kryptogramm](https://github.com/infoaed/kryptogramm).
+
+This tool makes use of a library of mine: [takakv/pyivxv](https://github.com/takakv/pyivxv).
 
 ## Usage
 
