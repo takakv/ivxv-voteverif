@@ -7,6 +7,7 @@ from typing import NamedTuple
 
 from PIL import Image
 from pyasice import Container, SignatureVerificationError
+from pyasice.ocsp import OCSP
 from pyivxv.crypto.ciphertext import ElGamalCiphertext
 from pyivxv.crypto.keys import PublicKey
 from pyivxv.encoding.message import decode_from_point
@@ -87,11 +88,33 @@ def main(f_data: str, config: VerifierConfig):
         print("[-] Signature verification failed")
         sys.exit(1)
 
+    ocsp_bin = OCSP.load(base64.b64decode(ballot_data.ocsp))
+
+    signatures = list(container.iter_signatures())
+    if len(signatures) != 1:
+        print("[-] The ballot has been signed by more than one person")
+        sys.exit(1)
+
+    signature = signatures[0]
+    signature.set_ocsp_response(ocsp_bin)
+    try:
+        signature.verify_ocsp_response()
+    except SignatureVerificationError:
+        print("[-] OCSP response verification failed")
+        sys.exit(1)
+
+    signer_certificate = signature.get_certificate()
+    signer_cn = signer_certificate.asn1.subject.native["common_name"]
+
     data_files = container.data_file_names
     if len(data_files) != 1:
         print("[-] Container contents are incorrect")
 
-    with container.open_file(data_files[0]) as f:
+    ballot_filename = data_files[0]
+    if ballot_filename != f"{pk.election_id}.{config.question_id}.ballot":
+        print("[-] Incorrect ballot filename")
+
+    with container.open_file(ballot_filename) as f:
         ct = ElGamalCiphertext.from_bytes(f.read())
 
     r = int.from_bytes(base64.b64decode(ballot_data.random), byteorder="big")
@@ -99,6 +122,7 @@ def main(f_data: str, config: VerifierConfig):
         print("[-] Invalid random value")
 
     unblinded = ct.unblind(pk.H, r=r)
+    print("Voter:", signer_cn)
     print("Choice:", decode_from_point(unblinded, pk.curve).decode())
 
 
