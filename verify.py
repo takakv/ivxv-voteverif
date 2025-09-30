@@ -91,6 +91,11 @@ def main(f_data: str, config: VerifierConfig):
     ocsp_response = OCSP.load(base64.b64decode(ballot_data.ocsp))
     timestamp_response = TSA.load(base64.b64decode(ballot_data.tspreg))
 
+    signature_filename = container.signature_file_names[0]
+    if signature_filename != "META-INF/signatures0.xml":
+        print("[-] Incorrect signature filename")
+        sys.exit(1)
+
     signature = signatures[0]
     signature.set_ocsp_response(ocsp_response)
     signature.set_timestamp_response(timestamp_response)
@@ -138,6 +143,10 @@ def main(f_data: str, config: VerifierConfig):
     print("Cast by. . . :", signer_cn)
     print("Registered at:", official_timestamp)
     print("Choice . . . :", decode_from_point(unblinded, pk.curve).decode())
+
+    # Save the container with qualifying properties.
+    container.update_signature(signature, signature_filename)
+    container.save(f"data/{safe_vote_id}.asice")
 
 
 if __name__ == "__main__":
