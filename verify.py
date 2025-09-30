@@ -54,13 +54,14 @@ def fetch_and_store(qr_data: QRData, config: VerifierConfig) -> str:
 
     assert qr_data.session_id == verify_result.session_id
 
-    safe_vote_id = canonicalize_vote_id(verify_result.vote_id)
+    safe_vote_id = canonicalize_vote_id(qr_data.vote_id)
     with open(f"data/{safe_vote_id}.bdoc", "wb") as f:
         f.write(base64.b64decode(verify_result.vote))
 
     with open(f"data/{safe_vote_id}.json", "w") as f:
         data = {"sessionId": qr_data.session_id, "voteId": qr_data.vote_id, "rand": qr_data.enc_rand,
-                "ocsp": verify_result.qual.ocsp, "tspreg": verify_result.qual.tspreg}
+                "ocsp": verify_result.qual.ocsp, "tspreg": verify_result.qual.tspreg,
+                "choices_list": verify_result.choices_list, "vote": verify_result.vote}
         f.write(json.dumps(data, indent=2))
 
     return f"data/{safe_vote_id}.json"
@@ -98,8 +99,7 @@ def main(f_data: str, config: VerifierConfig):
         print("[-] Invalid random value")
 
     unblinded = ct.unblind(pk.H, r=r)
-
-    print(decode_from_point(unblinded, pk.curve))
+    print("Choice:", decode_from_point(unblinded, pk.curve).decode())
 
 
 if __name__ == "__main__":
@@ -110,8 +110,6 @@ if __name__ == "__main__":
         help="the verifier's configuration file",
         default="config.json"
     )
-
-    print(OS_STRING)
 
     args = parser.parse_args()
 

@@ -16,7 +16,7 @@ class RPCVerifyResult(BaseModel):
     session_id: str = Field(..., alias="SessionID")
     type: str = Field(..., alias="Type")
     vote: str = Field(..., alias="Vote")
-    choices_list: str = Field(..., alias="ChoiceList")
+    choices_list: str = Field(..., alias="ChoicesList")
 
 
 class RPCClient:

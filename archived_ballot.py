@@ -7,3 +7,5 @@ class ArchivedBallot(BaseModel):
     random: str = Field(..., alias="rand")
     ocsp: str = Field(..., alias="ocsp")
     tspreg: str = Field(..., alias="tspreg")
+    choices_list: str = Field(..., alias="choices_list")
+    vote: str = Field(..., alias="vote")
