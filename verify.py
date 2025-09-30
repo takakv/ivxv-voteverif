@@ -8,6 +8,7 @@ from typing import NamedTuple
 from PIL import Image
 from pyasice import Container, SignatureVerificationError
 from pyasice.ocsp import OCSP
+from pyasice.tsa import TSA
 from pyivxv.crypto.ciphertext import ElGamalCiphertext
 from pyivxv.crypto.keys import PublicKey
 from pyivxv.encoding.message import decode_from_point
@@ -82,26 +83,38 @@ def main(f_data: str, config: VerifierConfig):
     safe_vote_id = canonicalize_vote_id(ballot_data.vote_id)
     container = Container.open(f"data/{safe_vote_id}.bdoc")
 
-    try:
-        container.verify_signatures()
-    except SignatureVerificationError:
-        print("[-] Signature verification failed")
-        sys.exit(1)
-
-    ocsp_bin = OCSP.load(base64.b64decode(ballot_data.ocsp))
-
     signatures = list(container.iter_signatures())
     if len(signatures) != 1:
         print("[-] The ballot has been signed by more than one person")
         sys.exit(1)
 
+    ocsp_response = OCSP.load(base64.b64decode(ballot_data.ocsp))
+    timestamp_response = TSA.load(base64.b64decode(ballot_data.tspreg))
+
     signature = signatures[0]
-    signature.set_ocsp_response(ocsp_bin)
+    signature.set_ocsp_response(ocsp_response)
+    signature.set_timestamp_response(timestamp_response)
+
+    try:
+        signature.verify()
+    except SignatureVerificationError:
+        print("[-] Signature verification failed")
+        sys.exit(1)
+
     try:
         signature.verify_ocsp_response()
     except SignatureVerificationError:
         print("[-] OCSP response verification failed")
         sys.exit(1)
+
+    try:
+        signature.verify_ts_response()
+    except SignatureVerificationError:
+        print("[-] TSA response verification failed")
+        sys.exit(1)
+
+    timestamp_response_internal = timestamp_response.ts_response.native["content"]["encap_content_info"]
+    official_timestamp = timestamp_response_internal["content"]["gen_time"]
 
     signer_certificate = signature.get_certificate()
     signer_cn = signer_certificate.asn1.subject.native["common_name"]
@@ -122,8 +135,9 @@ def main(f_data: str, config: VerifierConfig):
         print("[-] Invalid random value")
 
     unblinded = ct.unblind(pk.H, r=r)
-    print("Voter:", signer_cn)
-    print("Choice:", decode_from_point(unblinded, pk.curve).decode())
+    print("Cast by. . . :", signer_cn)
+    print("Registered at:", official_timestamp)
+    print("Choice . . . :", decode_from_point(unblinded, pk.curve).decode())
 
 
 if __name__ == "__main__":
