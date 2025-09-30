@@ -8,6 +8,8 @@ class Params(BaseModel):
     collector_urls: list[str] = Field(..., alias="verification_url")
     public_key: str = Field(..., alias="public_key")
     verification_sni: str = Field(..., alias="verification_sni")
+    tspreg_client_cert: str = Field(..., alias="tspreg_client_cert")
+    tspreg_service_cert: str = Field(..., alias="tspreg_service_cert")
 
 
 class AppConfig(BaseModel):
@@ -44,6 +46,14 @@ class VerifierConfig(BaseModel):
     @property
     def public_key_pem(self) -> str:
         return self.raw.params.public_key
+
+    @property
+    def collector_cert(self) -> str:
+        return self.raw.params.tspreg_client_cert
+
+    @property
+    def tspreg_cert(self) -> str:
+        return self.raw.params.tspreg_service_cert
 
 
 if __name__ == "__main__":

@@ -6,9 +6,18 @@ import sys
 from typing import NamedTuple, Dict
 
 from PIL import Image
-from pyasice import Container, SignatureVerificationError
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
+from cryptography.x509 import load_pem_x509_certificate, Certificate
+from lxml import etree
+from pyasice import Container, SignatureVerificationError, XmlSignature
 from pyasice.ocsp import OCSP
 from pyasice.tsa import TSA
+from pyasn1.codec.der import decoder
+from pyasn1_modules.rfc3161 import ContentInfo, TSTInfo
+from pyasn1_modules.rfc5652 import SignedData
 from pyivxv.crypto.ciphertext import ElGamalCiphertext
 from pyivxv.crypto.keys import PublicKey
 from pyivxv.encoding.message import decode_from_point
@@ -61,6 +70,35 @@ def identify_code(data: Dict[str, Dict[str, str]], code: str) -> VoterChoice | N
         if code in candidates:
             return VoterChoice(party, code, candidates[code])
     return None
+
+
+def verify_ts_ballot_registration(cert: Certificate, sd: SignedData):
+    # The signature itself is verified by pyasice.
+    if len(sd["signerInfos"]) != 1:
+        print("[-] The TSP response should have a single signer")
+        sys.exit(1)
+
+    signer_info = sd["signerInfos"][0]
+    iasn = signer_info["sid"]["issuerAndSerialNumber"]
+
+    if int(iasn["serialNumber"]) != cert.serial_number:
+        print("[-] The TSP response does not correspond to the expected certificate")
+        sys.exit(1)
+
+
+def verify_collector_ballot_registration(cert: Certificate, tst_info: TSTInfo, ballot_sig: XmlSignature):
+    ts_nonce = int(tst_info["nonce"])
+    ts_req_sig, _ = decoder.decode(ts_nonce.to_bytes((ts_nonce.bit_length() + 7) // 8, "big"))
+
+    collector_signature: bytes = ts_req_sig[1].asOctets()
+    collector_signed: bytes = etree.tostring(ballot_sig._get_signature_value_node(), method="c14n")
+
+    collector_pub: RSAPublicKey = cert.public_key()
+    try:
+        collector_pub.verify(collector_signature, collector_signed, padding.PKCS1v15(), hashes.SHA256())
+    except InvalidSignature:
+        print("[-] The collector has not signed the TS request in the expected manner")
+        sys.exit(1)
 
 
 def fetch_and_store(qr_data: QRData, config: VerifierConfig) -> str:
@@ -130,6 +168,18 @@ def main(f_data: str, config: VerifierConfig):
     except SignatureVerificationError:
         print("[-] TSA response verification failed")
         sys.exit(1)
+
+    ts_token, _ = decoder.decode(signature.get_timestamp_response(), asn1Spec=ContentInfo())
+    ts_signed_data, _ = decoder.decode(ts_token["content"].asOctets(), asn1Spec=SignedData())
+    tst_info, _ = decoder.decode(ts_signed_data["encapContentInfo"]["eContent"].asOctets(), asn1Spec=TSTInfo())
+
+    # We need to confirm that the registration service is the intended one.
+    tsp_cert = load_pem_x509_certificate(config.tspreg_cert.encode())
+    verify_ts_ballot_registration(tsp_cert, ts_signed_data)
+
+    # We also need to confirm that the collector signed the timestamp request.
+    collector_cert = load_pem_x509_certificate(config.collector_cert.encode())
+    verify_collector_ballot_registration(collector_cert, tst_info, signature)
 
     data_files = container.data_file_names
     if len(data_files) != 1:
