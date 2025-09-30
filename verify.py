@@ -3,7 +3,7 @@ import base64
 import json
 import platform
 import sys
-from typing import NamedTuple
+from typing import NamedTuple, Dict
 
 from PIL import Image
 from pyasice import Container, SignatureVerificationError
@@ -27,6 +27,12 @@ class QRData(NamedTuple):
     vote_id: str
 
 
+class VoterChoice(NamedTuple):
+    party: str
+    code: str
+    name: str
+
+
 def parse_qr(qr_file: str) -> QRData:
     qr_obj = pyzbar.decode(Image.open(qr_file), symbols=[pyzbar.ZBarSymbol.QRCODE])
 
@@ -48,6 +54,13 @@ def parse_qr(qr_file: str) -> QRData:
 
 def canonicalize_vote_id(vote_id: str) -> str:
     return base64.urlsafe_b64encode(base64.b64decode(vote_id)).decode()
+
+
+def identify_code(data: Dict[str, Dict[str, str]], code: str) -> VoterChoice | None:
+    for party, candidates in data.items():
+        if code in candidates:
+            return VoterChoice(party, code, candidates[code])
+    return None
 
 
 def fetch_and_store(qr_data: QRData, config: VerifierConfig) -> str:
@@ -88,13 +101,13 @@ def main(f_data: str, config: VerifierConfig):
         print("[-] The ballot has been signed by more than one person")
         sys.exit(1)
 
-    ocsp_response = OCSP.load(base64.b64decode(ballot_data.ocsp))
-    timestamp_response = TSA.load(base64.b64decode(ballot_data.tspreg))
-
     signature_filename = container.signature_file_names[0]
     if signature_filename != "META-INF/signatures0.xml":
         print("[-] Incorrect signature filename")
         sys.exit(1)
+
+    ocsp_response = OCSP.load(base64.b64decode(ballot_data.ocsp))
+    timestamp_response = TSA.load(base64.b64decode(ballot_data.tspreg))
 
     signature = signatures[0]
     signature.set_ocsp_response(ocsp_response)
@@ -118,12 +131,6 @@ def main(f_data: str, config: VerifierConfig):
         print("[-] TSA response verification failed")
         sys.exit(1)
 
-    timestamp_response_internal = timestamp_response.ts_response.native["content"]["encap_content_info"]
-    official_timestamp = timestamp_response_internal["content"]["gen_time"]
-
-    signer_certificate = signature.get_certificate()
-    signer_cn = signer_certificate.asn1.subject.native["common_name"]
-
     data_files = container.data_file_names
     if len(data_files) != 1:
         print("[-] Container contents are incorrect")
@@ -140,9 +147,25 @@ def main(f_data: str, config: VerifierConfig):
         print("[-] Invalid random value")
 
     unblinded = ct.unblind(pk.H, r=r)
+    choice_code = decode_from_point(unblinded, pk.curve).decode()
+
+    allowed_choices = base64.b64decode(ballot_data.choices_list).decode()
+    allowed_choices_json = json.loads(allowed_choices)
+
+    voter_choice = identify_code(allowed_choices_json, choice_code)
+    if not voter_choice:
+        print("[-] Invalid choice:", choice_code)
+        sys.exit(1)
+
+    timestamp_response_internal = timestamp_response.ts_response.native["content"]["encap_content_info"]
+    official_timestamp = timestamp_response_internal["content"]["gen_time"]
+
+    signer_certificate = signature.get_certificate()
+    signer_cn = signer_certificate.asn1.subject.native["common_name"]
+
     print("Cast by. . . :", signer_cn)
     print("Registered at:", official_timestamp)
-    print("Choice . . . :", decode_from_point(unblinded, pk.curve).decode())
+    print("Choice . . . :", choice_code, f"({voter_choice.name}, {voter_choice.party})")
 
     # Save the container with qualifying properties.
     container.update_signature(signature, signature_filename)
