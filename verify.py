@@ -240,12 +240,12 @@ def main(f_data: str, config: VerifierConfig):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser()
     parser.add_argument("datafile", help="the saved vote JSON or the QR code", type=str)
     parser.add_argument(
         "-c", "--config",
-        help="the verifier's configuration file",
-        default="config.json"
+        default="config.json",
+        help="the verifier's configuration file  (default: %(default)s)",
     )
     parser.add_argument(
         "-i", "--ignore-errors",
