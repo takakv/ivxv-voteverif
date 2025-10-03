@@ -29,6 +29,8 @@ from rpc import RPCClient
 
 OS_STRING = f"takakv/ivxv-voteverif ({platform.system()} {platform.release()}) Python/{platform.python_version()}"
 
+SKIP_ERRORS = False
+
 
 class QRData(NamedTuple):
     session_id: str
@@ -40,6 +42,11 @@ class VoterChoice(NamedTuple):
     party: str
     code: str
     name: str
+
+
+def exit_program(code: int = 1):
+    if not SKIP_ERRORS:
+        sys.exit(code)
 
 
 def parse_qr(qr_file: str) -> QRData:
@@ -76,14 +83,14 @@ def verify_ts_ballot_registration(cert: Certificate, sd: SignedData):
     # The signature itself is verified by pyasice.
     if len(sd["signerInfos"]) != 1:
         print("[-] The TSP response should have a single signer")
-        sys.exit(1)
+        exit_program()
 
     signer_info = sd["signerInfos"][0]
     iasn = signer_info["sid"]["issuerAndSerialNumber"]
 
     if int(iasn["serialNumber"]) != cert.serial_number:
         print("[-] The TSP response does not correspond to the expected certificate")
-        sys.exit(1)
+        exit_program()
 
 
 def verify_collector_ballot_registration(cert: Certificate, tst_info: TSTInfo, ballot_sig: XmlSignature):
@@ -98,7 +105,7 @@ def verify_collector_ballot_registration(cert: Certificate, tst_info: TSTInfo, b
         collector_pub.verify(collector_signature, collector_signed, padding.PKCS1v15(), hashes.SHA256())
     except InvalidSignature:
         print("[-] The collector has not signed the TS request in the expected manner")
-        sys.exit(1)
+        exit_program()
 
 
 def fetch_and_store(qr_data: QRData, config: VerifierConfig) -> str:
@@ -135,14 +142,19 @@ def main(f_data: str, config: VerifierConfig):
     container = Container.open(f"data/{safe_vote_id}.bdoc")
 
     signatures = list(container.iter_signatures())
-    if len(signatures) != 1:
+
+    if len(signatures) > 1:
         print("[-] The ballot has been signed by more than one person")
+        exit_program()
+    elif len(signatures) == 0:
+        print("[-] The ballot has not been signed")
+        # The subsequent code assumes that the signature exists.
         sys.exit(1)
 
     signature_filename = container.signature_file_names[0]
     if signature_filename != "META-INF/signatures0.xml":
         print("[-] Incorrect signature filename")
-        sys.exit(1)
+        exit_program()
 
     ocsp_response = OCSP.load(base64.b64decode(ballot_data.ocsp))
     timestamp_response = TSA.load(base64.b64decode(ballot_data.tspreg))
@@ -155,19 +167,19 @@ def main(f_data: str, config: VerifierConfig):
         signature.verify()
     except SignatureVerificationError:
         print("[-] Signature verification failed")
-        sys.exit(1)
+        exit_program()
 
     try:
         signature.verify_ocsp_response()
     except SignatureVerificationError:
         print("[-] OCSP response verification failed")
-        sys.exit(1)
+        exit_program()
 
     try:
         signature.verify_ts_response()
     except SignatureVerificationError:
         print("[-] TSA response verification failed")
-        sys.exit(1)
+        exit_program()
 
     ts_token, _ = decoder.decode(signature.get_timestamp_response(), asn1Spec=ContentInfo())
     ts_signed_data, _ = decoder.decode(ts_token["content"].asOctets(), asn1Spec=SignedData())
@@ -184,10 +196,12 @@ def main(f_data: str, config: VerifierConfig):
     data_files = container.data_file_names
     if len(data_files) != 1:
         print("[-] Container contents are incorrect")
+        exit_program()
 
     ballot_filename = data_files[0]
     if ballot_filename != f"{pk.election_id}.{config.question_id}.ballot":
         print("[-] Incorrect ballot filename")
+        exit_program()
 
     with container.open_file(ballot_filename) as f:
         ct = ElGamalCiphertext.from_bytes(f.read())
@@ -195,6 +209,9 @@ def main(f_data: str, config: VerifierConfig):
     r = int.from_bytes(base64.b64decode(ballot_data.random), byteorder="big")
     if pk.curve.G * r != ct.U:
         print("[-] Invalid random value")
+        # The subsequent code assumes that the random value is correct.
+        # Decoding from a point will fail if not.
+        sys.exit(1)
 
     unblinded = ct.unblind(pk.H, r=r)
     choice_code = decode_from_point(unblinded, pk.curve).decode()
@@ -205,7 +222,7 @@ def main(f_data: str, config: VerifierConfig):
     voter_choice = identify_code(allowed_choices_json, choice_code)
     if not voter_choice:
         print("[-] Invalid choice:", choice_code)
-        sys.exit(1)
+        exit_program()
 
     timestamp_response_internal = timestamp_response.ts_response.native["content"]["encap_content_info"]
     official_timestamp = timestamp_response_internal["content"]["gen_time"]
@@ -226,12 +243,18 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("datafile", help="the saved vote JSON or the QR code", type=str)
     parser.add_argument(
-        "--config",
+        "-c", "--config",
         help="the verifier's configuration file",
         default="config.json"
     )
+    parser.add_argument(
+        "-i", "--ignore-errors",
+        action="store_true",
+        help="continue verification even if a check fails"
+    )
 
     args = parser.parse_args()
+    SKIP_ERRORS = args.ignore_errors
 
     with open(args.config, "r") as config_file:
         config_json = json.loads(config_file.read())

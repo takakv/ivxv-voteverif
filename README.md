@@ -25,14 +25,15 @@ pip install -r requirements.txt
 The usage parameters are
 
 ```text
-usage: verify.py [-h] [--config CONFIG] datafile
+usage: verify.py [-h] [-c CONFIG] [-i] datafile
 
 positional arguments:
-  datafile         the saved vote JSON or the QR code
+  datafile             the saved vote JSON or the QR code
 
 options:
-  -h, --help       show this help message and exit
-  --config CONFIG  the verifier's configuration file (default: config.json)
+  -h, --help           show this help message and exit
+  -c, --config CONFIG  the verifier's configuration file (default: config.json)
+  -i, --ignore-errors  continue verification even if a check fails (default: False)
 ```
 
 The official verification configuration is typically stored at
