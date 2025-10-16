@@ -235,8 +235,9 @@ def main(f_data: str, config: VerifierConfig):
     print("Choice . . . :", choice_code, f"({voter_choice.name}, {voter_choice.party})")
 
     # Save the container with qualifying properties.
-    container.update_signature(signature, signature_filename)
-    container.save(f"data/{safe_vote_id}.asice")
+    if file_extension != "json":
+        container.update_signature(signature, signature_filename)
+        container.save(f"data/{safe_vote_id}.asice")
 
 
 if __name__ == "__main__":
