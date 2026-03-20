@@ -20,7 +20,6 @@ from pyasn1_modules.rfc3161 import ContentInfo, TSTInfo
 from pyasn1_modules.rfc5652 import SignedData
 from pyivxv.crypto.ciphertext import ElGamalCiphertext
 from pyivxv.crypto.keys import PublicKey
-from pyivxv.encoding.message import decode_from_point
 from pyzbar import pyzbar
 
 from archived_ballot import ArchivedBallot
@@ -213,11 +212,24 @@ def main(f_data: str, config: VerifierConfig):
         # Decoding from a point will fail if not.
         sys.exit(1)
 
-    unblinded = ct.unblind(pk.H, r=r)
-    choice_code = decode_from_point(unblinded, pk.curve).decode()
-
     allowed_choices = base64.b64decode(ballot_data.choices_list).decode()
     allowed_choices_json = json.loads(allowed_choices)
+    choice_codes: list[str] = [
+        code
+        for party in allowed_choices_json.values()
+        for code in party.keys()
+    ]
+    choice_code = None
+
+    unblinded = ct.unblind(pk.H, r=r)
+    for code in choice_codes:
+        if pk.curve.G * int.from_bytes(code.encode(), byteorder="big") == unblinded:
+            choice_code = code
+            break
+
+    if choice_code is None:
+        print("[-] Unknown choice", choice_code)
+        exit_program()
 
     voter_choice = identify_code(allowed_choices_json, choice_code)
     if not voter_choice:
