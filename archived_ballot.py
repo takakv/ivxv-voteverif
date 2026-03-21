@@ -1,11 +1,21 @@
 from pydantic import BaseModel, Field
 
+from rpc import RPCVerifyResult
+
 
 class ArchivedBallot(BaseModel):
-    session_id: str = Field(..., alias="sessionId")
+    ephemeral: str
     vote_id: str = Field(..., alias="voteId")
-    random: str = Field(..., alias="rand")
-    ocsp: str = Field(..., alias="ocsp")
-    tspreg: str = Field(..., alias="tspreg")
-    choices_list: str = Field(..., alias="choices_list")
-    vote: str = Field(..., alias="vote")
+    result: RPCVerifyResult
+
+    @property
+    def ocsp(self) -> str:
+        return self.result.qual.ocsp
+
+    @property
+    def tspreg(self) -> str:
+        return self.result.qual.tspreg
+
+    @property
+    def choices_list(self) -> str:
+        return self.result.choices_list

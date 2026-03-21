@@ -118,10 +118,12 @@ def fetch_and_store(qr_data: QRData, config: VerifierConfig) -> str:
         f.write(base64.b64decode(verify_result.vote))
 
     with open(f"data/{safe_vote_id}.json", "w") as f:
-        data = {"sessionId": qr_data.session_id, "voteId": qr_data.vote_id, "rand": qr_data.enc_rand,
-                "ocsp": verify_result.qual.ocsp, "tspreg": verify_result.qual.tspreg,
-                "choices_list": verify_result.choices_list, "vote": verify_result.vote}
-        f.write(json.dumps(data, indent=2))
+        ballot = ArchivedBallot(
+            ephemeral=qr_data.enc_rand,
+            voteId=qr_data.vote_id,
+            result=verify_result,
+        )
+        f.write(ballot.model_dump_json(by_alias=True, indent=2))
 
     return f"data/{safe_vote_id}.json"
 
@@ -133,7 +135,7 @@ def main(f_data: str, config: VerifierConfig):
         f_data = fetch_and_store(parse_qr(f_data), config)
 
     with open(f_data, "r") as f:
-        ballot_data = ArchivedBallot(**json.loads(f.read()))
+        ballot_data = ArchivedBallot.model_validate_json(f.read())
 
     pk = PublicKey.from_public_bytes(config.public_key_pem.encode())
 
@@ -205,7 +207,7 @@ def main(f_data: str, config: VerifierConfig):
     with container.open_file(ballot_filename) as f:
         ct = ElGamalCiphertext.from_bytes(f.read())
 
-    r = int.from_bytes(base64.b64decode(ballot_data.random), byteorder="big")
+    r = int.from_bytes(base64.b64decode(ballot_data.ephemeral), byteorder="big")
     if pk.curve.G * r != ct.U:
         print("[-] Invalid random value")
         # The subsequent code assumes that the random value is correct.
