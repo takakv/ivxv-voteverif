@@ -1,6 +1,7 @@
 import argparse
 import base64
 import json
+import os
 import platform
 import sys
 from typing import NamedTuple, Dict
@@ -141,7 +142,12 @@ def main(f_data: str, config: VerifierConfig):
     pk = PublicKey.from_public_bytes(config.public_key_pem.encode())
 
     safe_vote_id = canonicalize_vote_id(ballot_data.vote_id)
-    container = Container.open(f"data/{safe_vote_id}.bdoc")
+
+    container_path = f"data/{safe_vote_id}.bdoc"
+    if not os.path.exists(container_path):
+        with open(container_path, "wb") as f:
+            f.write(base64.b64decode(ballot_data.result.vote))
+    container = Container.open(container_path)
 
     signatures = list(container.iter_signatures())
 
