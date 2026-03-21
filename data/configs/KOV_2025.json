@@ -1,0 +1,89 @@
+{
+  "appConfig": {
+    "versions": {
+      "android_version_code": 32,
+      "ios_bundle_version": "2.1.14"
+    },
+    "texts": {
+      "loading": "Laadin...",
+      "welcome_message": "Hääle kontrollimiseks suuna nutiseadme kaamera arvuti ekraanil kuvatavale QR-koodile",
+      "lbl_vote": "Hääle kontrollimine",
+      "lbl_vote_txt": "Sinu QR-koodile vastav hääl on talletatud valimiste serveris",
+      "lbl_vote_signer": "E-hääle allkirjastaja: ",
+      "btn_next": "Edasi",
+      "btn_more": "Abiinfo",
+      "btn_packet_data": "Andmeside",
+      "btn_wifi": "Wifi",
+      "btn_verify": "Kuva minu valik",
+      "lbl_no_choice": "Valikut ei tehtud",
+      "lbl_choice": "Tuvastatud valik",
+      "lbl_close_timeout": "Rakendus suletakse XX sekundi pärast!",
+      "notification_title": "Riigi valimisteenistus",
+      "btn_close": "Sulge",
+      "btn_ok": "Ok",
+      "btn_update": "Värskenda",
+      "a11y_qr_view_opened": "Alusta QR-koodi skaneerimist",
+      "notification_message": "Kontrollimine lõpetatud"
+    },
+    "errors": {
+      "no_network_message": "Veendu, et internetiühendus töötab",
+      "get_config_message": "Seadistuse laadimine ebaõnnestus. Probleem võib olla internetiühenduses",
+      "problem_qrcode_message": "QR-koodi ei õnnestunud tuvastada",
+      "close_qrcode_message": "QR-koodi ei õnnestunud tuvastada",
+      "bad_server_response_message": "Tehniline viga, palun teavita valimiste korraldajat abi@valimised.ee",
+      "bad_device_message": "Selle seadmega pole võimalik e-häält kontrollida",
+      "bad_verification_message": "Valiku tuvastamine ebaõnnestus",
+      "bad_config_message": "Seadistuse viga",
+      "camera_permission_required_message": "Rakenduse kasutamiseks peab olema kaamera kasutamine lubatud",
+      "bad_version_message": "See rakendus on aegunud",
+      "send_server_request_message": "Serveriga ühendumine ebaõnnestus"
+    },
+    "colors": {
+      "frame_background": "#AA444444",
+      "main_window_foreground": "#FFFFFF",
+      "error_window_foreground": "#FFFFFF",
+      "loading_window_background": "#33B5E5",
+      "loading_window_foreground": "#FFFFFF",
+      "main_window": "#33B5E5",
+      "main_window_shadow": "#005777",
+      "error_window": "#FF0000",
+      "error_window_shadow": "#770000",
+      "btn_background": "#F0F0F0",
+      "btn_foreground": "#727272",
+      "btn_verify_foreground": "#FFFFFF",
+      "btn_verify_background_start": "#30B4E5",
+      "btn_verify_background_center": "#1AABE1",
+      "btn_verify_background_end": "#00A1DC",
+      "lbl_background": "#33B5E5",
+      "lbl_foreground": "#FFFFFF",
+      "lbl_shadow": "#008EC2",
+      "lbl_outer_container_background": "#EAEAEA",
+      "lbl_outer_container_foreground": "#404040",
+      "lbl_inner_container_background": "#FFFFFF",
+      "lbl_inner_container_foreground": "#404040",
+      "lbl_close_timeout_foreground": "#454444",
+      "lbl_close_timeout_background_start": "#FEEC00",
+      "lbl_close_timeout_background_center": "#F9D303",
+      "lbl_close_timeout_background_end": "#F7C804",
+      "lbl_close_timeout_shadow": "#C6A002",
+      "lbl_outer_inner_container_divider": "#595959"
+    },
+    "params": {
+      "verification_url": ["195.80.118.35:443", "195.80.118.43:443", "195.80.118.59:443"],
+      "verification_tls": ["-----BEGIN CERTIFICATE-----\nMIIB7TCCAZOgAwIBAgIUTtzP3QkRNdSsw8MnEXmVOsejrx4wCgYIKoZIzj0EAwIw\nTDELMAkGA1UEBhMCRUUxDDAKBgNVBAoMA1JJQTEaMBgGA1UECwwRSVZYViBDZXJ0\naWZpY2F0ZXMxEzARBgNVBAMMClNlcnZpY2UgQ0EwHhcNMjUwOTE4MDkxMTQ0WhcN\nMjYwOTE4MDkxMTQ0WjBMMQswCQYDVQQGEwJFRTEMMAoGA1UECgwDUklBMRowGAYD\nVQQLDBFJVlhWIENlcnRpZmljYXRlczETMBEGA1UEAwwKU2VydmljZSBDQTBZMBMG\nByqGSM49AgEGCCqGSM49AwEHA0IABONXI240cj0k2wZ2qfv8kdGtn1j3hFjmZuj9\nSlWtknhvjOTT2ROp4KAsq5sq6I7zSWNY4NPE8u45BiikzUkpSMijUzBRMB0GA1Ud\nDgQWBBRfMD1qWyjdLfHQwH7OOnMpuWaIyjAfBgNVHSMEGDAWgBRfMD1qWyjdLfHQ\nwH7OOnMpuWaIyjAPBgNVHRMBAf8EBTADAQH/MAoGCCqGSM49BAMCA0gAMEUCIQDh\nYfXyy5TAQe1esdQXYXwCkcrtbgvos0u9TJiNIxWxkAIgM2tw/5Kkkjb/Rf1kpLou\n5xSz7awMAIFQQn2qcBlxqe8=\n-----END CERTIFICATE-----\n"],
+      "verification_sni": "verification.ivxv.valimised.ee",
+      "help_url": "https://www.valimised.ee/verify/help/index.html",
+      "close_timeout": 30000,
+      "close_interval": 1000,
+      "con_timeout_1": 3000,
+      "con_timeout_2": 15000,
+      "public_key": "-----BEGIN PUBLIC KEY-----\nMIGIMB4GCSsGAQQBho0fATARGwVQLTM4NBsIS09WXzIwMjUDZgAwYwRhBPHtodZe9e2rpZfQGlm2\nFB44gtMQKU3kre3LfuPeHxp+OUa1p/X7JDw/1HHqSrWuDTnWrh3aNttN5w0YC5c1pGu4gqv80KDX\nbGxJ36lLF/HF+z3Lm6w4JQ0Tk8AyxX4ZfQ==\n-----END PUBLIC KEY-----",
+      "tspreg_service_cert": "-----BEGIN CERTIFICATE-----\nMIIDjDCCAxOgAwIBAgIQAM2krlZn0f8oqXSmRMfyPjAKBggqhkjOPQQDAjBdMRgw\nFgYDVQQDDA9TSyBUU0EgQ0EgMjAyM0UxFzAVBgNVBGEMDk5UUkVFLTEwNzQ3MDEz\nMRswGQYDVQQKDBJTSyBJRCBTb2x1dGlvbnMgQVMxCzAJBgNVBAYTAkVFMB4XDTI1\nMDIyODIyMDAwMFoXDTMxMDMyOTIxNTk1OVowaDEjMCEGA1UEAwwaU0sgVElNRVNU\nQU1QSU5HIFVOSVQgMjAyNUUxFzAVBgNVBGEMDk5UUkVFLTEwNzQ3MDEzMRswGQYD\nVQQKDBJTSyBJRCBTb2x1dGlvbnMgQVMxCzAJBgNVBAYTAkVFMFkwEwYHKoZIzj0C\nAQYIKoZIzj0DAQcDQgAEziAk0sCAdrr2jwUEtFKSXDPu8BWi1ITk89PvvPGOhOt9\ntYkwyS8XSd2l2BiLK2tq/8eE30PYAt32Injdy8FC/KOCAagwggGkMB8GA1UdIwQY\nMBaAFFoYwDTO17eZ3wiQwAR9GPNzlr3PMGQGCCsGAQUFBwEBBFgwVjAyBggrBgEF\nBQcwAoYmaHR0cDovL2Muc2suZWUvU0tfVFNBX0NBXzIwMjNFLmRlci5jcnQwIAYI\nKwYBBQUHMAGGFGh0dHA6Ly9haWEuc2suZWUvdHNhMIGeBgNVHSAEgZYwgZMwgZAG\nBgQAj3oBAjCBhTA7BggrBgEFBQcCARYvaHR0cHM6Ly93d3cuc2tpZHNvbHV0aW9u\ncy5ldS9lbi9yZXBvc2l0b3J5L3RzYS8wRgYIKwYBBQUHAgIwOgw4VFNVIGNlcnRp\nZmljYXRlIGhhcyBiZWVuIGlzc3VlZCBhY2NvcmRpbmcgdG8gTkNQKyBwb2xpY3kw\nFgYDVR0lAQH/BAwwCgYIKwYBBQUHAwgwMwYDVR0fBCwwKjAooCagJIYiaHR0cDov\nL2Muc2suZWUvc2tfdHNhX2NhXzIwMjNlLmNybDAdBgNVHQ4EFgQUean8iWa8bFRp\nhkphpMAC/QDT6p4wDgYDVR0PAQH/BAQDAgbAMAoGCCqGSM49BAMCA2cAMGQCMDKq\nkQ5/KTNJn8ygXrvnfW83T4GKf/NhIEQaI7NiLnYz+Z1nV58NnEWPf9QHFODq7AIw\nIZXcVbx1IxcKm1LH+DyF1Te3NfhcpkWuPC8hymZej2WXGL2FWzChUkwma5z1C2JG\n-----END CERTIFICATE-----\n",
+      "ocsp_service_cert": [],
+      "tspreg_client_cert": "-----BEGIN CERTIFICATE-----\nMIIDkTCCAnmgAwIBAgIUV9BjJbf1G9Z4VGriXUqydi8Nlw0wDQYJKoZIhvcNAQEL\nBQAwWDELMAkGA1UEBhMCRUUxDDAKBgNVBAoMA1JJQTEaMBgGA1UECwwRSVZYViBD\nZXJ0aWZpY2F0ZXMxHzAdBgNVBAMMFkNvbGxlY3RvciBSZWdpc3RyYXRpb24wHhcN\nMjUwOTE4MDkxMTQ0WhcNMjYwOTE4MDkxMTQ0WjBYMQswCQYDVQQGEwJFRTEMMAoG\nA1UECgwDUklBMRowGAYDVQQLDBFJVlhWIENlcnRpZmljYXRlczEfMB0GA1UEAwwW\nQ29sbGVjdG9yIFJlZ2lzdHJhdGlvbjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCC\nAQoCggEBANemYp5xc0W8ImDP33c9IUcCcIS+EgkhZ4tQBTY5O7kKbmz5MhLk++1R\nDukx1ZtZIi9RrlNQD6iiuFLYao5R03qtzhnMAXrwP4LJwfrinW0K6IkKzQX827Rg\ncHteTlEy352XcIE7jFmk3YMO9L2lgu2zZvKOAarAbBgtgK0H3dmqn4rPuDGQhB+x\nZBNjMjf2AkoAiYDKSQRZ2Nd6pkBicXesqPeqCubjPooDO4lWvRRHbVtICraXoaPV\niBTcXJEeEhReQUpIPDOJ5180TWna3BzsPlnfMaweuOc3A2P4rQuc6RtzLjzxkT+y\nyaY6zRfzfqJyeri8RRCtXuXX9dsCSGsCAwEAAaNTMFEwHQYDVR0OBBYEFA3cecUu\nQwFdfKRV3EViVrb/YVUvMB8GA1UdIwQYMBaAFA3cecUuQwFdfKRV3EViVrb/YVUv\nMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBABtmiDoN/bzFNv7P\nkawj7uLT2nyO0DQL+GarBjWqjSJP+14AaaC0Oy+A7zcvX/6W/IQxo5zB4Cch5W21\nO95E8bScGcqSxtle2ZR1Epf4mKpbx6RMfVGiOK1uhWmhniFx8qPJSCds3taPtsKo\nG/m7ksDAj29rqZTEciYPY4rgQZoc2VMYWbK36oDbcqy0PcwGjbBofZbAehxXlzBI\nnFIT595onOI057vtbnCg1ULMY9P09u7gkIR/AJrU+q2AfsnaSHpVvuNrKX97prmT\nfzHMmHjvGJyiXpjFed+ZVMd9CFU2OAa92OlEIXvA6um2Mv1I6gYKLL5ozhVX8TY7\n3q7Sdr0=\n-----END CERTIFICATE-----\n"
+    },
+    "elections": {
+      "question-KOV_2025": "Vali kandidaat, kelle poolt hääletad?"
+    }
+  }
+}
