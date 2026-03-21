@@ -19,6 +19,7 @@ from pyasice.tsa import TSA
 from pyasn1.codec.der import decoder
 from pyasn1_modules.rfc3161 import ContentInfo, TSTInfo
 from pyasn1_modules.rfc5652 import SignedData
+from pydantic import ValidationError
 from pyivxv.crypto.ciphertext import ElGamalCiphertext
 from pyivxv.crypto.keys import PublicKey
 from pyivxv.encoding.message import decode_from_point
@@ -137,7 +138,12 @@ def main(f_data: str, config: VerifierConfig):
         f_data = fetch_and_store(parse_qr(f_data), config)
 
     with open(f_data, "r") as f:
-        ballot_data = ArchivedBallot.model_validate_json(f.read())
+        try:
+            ballot_data = ArchivedBallot.model_validate_json(f.read())
+        except ValidationError as e:
+            print(f"[-] Invalid JSON")
+            print(e)
+            sys.exit(1)
 
     pk = PublicKey.from_public_bytes(config.public_key_pem.encode())
 
