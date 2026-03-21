@@ -20,6 +20,7 @@ from pyasn1_modules.rfc3161 import ContentInfo, TSTInfo
 from pyasn1_modules.rfc5652 import SignedData
 from pyivxv.crypto.ciphertext import ElGamalCiphertext
 from pyivxv.crypto.keys import PublicKey
+from pyivxv.encoding.message import decode_from_point
 from pyzbar import pyzbar
 
 from archived_ballot import ArchivedBallot
@@ -216,27 +217,32 @@ def main(f_data: str, config: VerifierConfig):
 
     allowed_choices = base64.b64decode(ballot_data.choices_list).decode()
     allowed_choices_json = json.loads(allowed_choices)
-    choice_codes: list[str] = [
-        code
-        for party in allowed_choices_json.values()
-        for code in party.keys()
-    ]
-    choice_code = None
 
     unblinded = ct.unblind(pk.H, r=r)
-    for code in choice_codes:
-        if pk.curve.G * int.from_bytes(code.encode(), byteorder="big") == unblinded:
-            choice_code = code
-            break
 
+    if pk.lifted:
+        choice_codes: list[str] = [
+            code
+            for party in allowed_choices_json.values()
+            for code in party.keys()
+        ]
+        choice_code = None
+        for code in choice_codes:
+            if pk.curve.G * int.from_bytes(code.encode(), byteorder="big") == unblinded:
+                choice_code = code
+                break
+    else:
+        choice_code = decode_from_point(unblinded, pk.curve).decode()
+
+    voter_choice = None
     if choice_code is None:
-        print("[-] Unknown choice", choice_code)
+        print("[-] Could not recover choice")
         exit_program()
-
-    voter_choice = identify_code(allowed_choices_json, choice_code)
-    if not voter_choice:
-        print("[-] Invalid choice:", choice_code)
-        exit_program()
+    else:
+        voter_choice = identify_code(allowed_choices_json, choice_code)
+        if not voter_choice:
+            print("[-] Unknown choice:", choice_code)
+            exit_program()
 
     timestamp_response_internal = timestamp_response.ts_response.native["content"]["encap_content_info"]
     official_timestamp = timestamp_response_internal["content"]["gen_time"]
@@ -246,7 +252,10 @@ def main(f_data: str, config: VerifierConfig):
 
     print("Cast by. . . :", signer_cn)
     print("Registered at:", official_timestamp)
-    print("Choice . . . :", choice_code, f"({voter_choice.name}, {voter_choice.party})")
+    if voter_choice:
+        print("Choice . . . :", choice_code, f"({voter_choice.name}, {voter_choice.party})")
+    else:
+        print("Choice . . . :", choice_code)
 
     # Save the container with qualifying properties.
     if file_extension != "json":
