@@ -2,12 +2,12 @@ import argparse
 import json
 
 
-def migrate(path: str):
+def convert(path: str):
     with open(path) as f:
         old = json.load(f)
 
     if "result" in old:
-        print(f"Already migrated: {path}")
+        print(f"Skipping {path}")
         return
 
     new = {
@@ -28,13 +28,13 @@ def migrate(path: str):
     with open(path, "w") as f:
         json.dump(new, f, indent=2)
 
-    print(f"Migrated: {path}")
+    print(f"Converted: {path}")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Migrate legacy saved vote JSON files to the nested structure")
+    parser = argparse.ArgumentParser(description="Convert legacy saved vote JSON files to the current version")
     parser.add_argument("files", nargs="+", help="JSON files to migrate")
     args = parser.parse_args()
 
     for path in args.files:
-        migrate(path)
+        convert(path)
