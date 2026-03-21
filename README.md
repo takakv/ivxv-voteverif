@@ -14,12 +14,33 @@ Another independent vote verification tool is [infoaed/kryptogramm](https://gith
 
 See [takakv/ivxv-decproof-verifier](https://github.com/takakv/ivxv-decproof-verifier) for an independent tool for verifying the zero-knowledge proofs of correct decryption.
 
+## Requirements
+
+The tool is written in Python 3.
+The intended package manager is [uv](https://docs.astral.sh/uv/getting-started/installation/) although it is not strictly necessary.
+
+The tool requires `zbar`, which can be installed e.g. using
+
+- `brew install zbar`
+  > Note: When using `uv`, you may then need to set `DYLD_LIBRARY_PATH=$(brew --prefix zbar)/lib`.
+- `apt-get install libzbar0`
+
+On Windows, no additional installation should be necessary.
+
 ## Usage
 
-Install the required dependencies with
+The tool can be run directly with
 
 ```
-pip install -r requirements.txt
+uv run verify.py
+```
+
+Alternatively, to set up and activate the project environment manually, execute:
+
+```
+uv sync
+source .venv/bin/activate
+python verify.py
 ```
 
 The usage parameters are
@@ -55,13 +76,13 @@ wget https://www.valimised.ee/verify/config.json
 Download and verify a vote using the verification QR code:
 
 ```
-python3 verify.py qr.png
+verify.py qr.png
 ```
 
 Verify a vote already downloaded with this tool:
 
 ```
-python3 verify.py data/3R1qg_eHAmznrc2lduJBXw==.json
+verify.py data/3R1qg_eHAmznrc2lduJBXw==.json
 ```
 
 The `migrate_json.py` script can be used to migrate the JSON accepted by this tool before 2026 to the current format.

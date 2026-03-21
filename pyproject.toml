@@ -1,0 +1,23 @@
+[project]
+name = "ivxv-voteverif"
+version = "0.1.0"
+description = "An independent cast-as-intended verification tool for IVXV"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "cryptography>=46.0.5",
+    "lxml>=6.0.2",
+    "pillow>=12.1.1",
+    "pyasice>=1.2.0",
+    "pyasn1>=0.6.3",
+    "pyasn1-modules>=0.4.2",
+    "pydantic>=2.12.5",
+    "pyivxv>=0.0.1a6",
+    "pyzbar>=0.1.9",
+]
+
+[tool.uv]
+# pyasice is overly strict with its lxml version restriction
+override-dependencies = [
+    "lxml>=4"
+]
