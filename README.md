@@ -63,3 +63,5 @@ Verify a vote already downloaded with this tool:
 ```
 python3 verify.py data/3R1qg_eHAmznrc2lduJBXw==.json
 ```
+
+The `migrate_json.py` script can be used to migrate the JSON accepted by this tool before 2026 to the current format.
